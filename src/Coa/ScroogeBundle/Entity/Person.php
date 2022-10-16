@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * Person
  *
  * @ORM\Entity(readOnly=true)
- * @ORM\Table(name="INDUCKS_PERSON")
+ * @ORM\Table(name="inducks_person")
  * 
  * @author dromanin
  */

@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 /**
  * PublicationName
  *
- * @ORM\Table(name="INDUCKS_PUBLICATIONNAME")
+ * @ORM\Table(name="inducks_publicationname")
  * @ORM\Entity(readOnly=true)
  * 
  */

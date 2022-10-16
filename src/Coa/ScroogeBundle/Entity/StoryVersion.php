@@ -8,7 +8,7 @@ use Doctrine\ORM\Mapping as ORM;
  * StoryVersion
  *
  * @ORM\Entity(readOnly=true)
- * @ORM\Table(name="INDUCKS_STORYVERSION")
+ * @ORM\Table(name="inducks_storyversion")
  * 
  * @author dromanin
  */
