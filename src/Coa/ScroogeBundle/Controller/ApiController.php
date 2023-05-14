@@ -3,11 +3,7 @@
 namespace Coa\ScroogeBundle\Controller;
 
 use Coa\ScroogeBundle\Entity;
-use Coa\ScroogeBundle\Entity\Entry;
-use Coa\ScroogeBundle\Entity\Issue;
-use Coa\ScroogeBundle\Entity\Publication;
 use Doctrine\Persistence\ManagerRegistry;
-use Coa\ScroogeBundle\Entity\Story;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -29,7 +25,7 @@ class ApiController extends AbstractController
     {
         $q = $req->get('q');
         $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($doctrine->getManager());
-        $rsm->addRootEntityFromClassMetadata(Publication::class, 'p');
+        $rsm->addRootEntityFromClassMetadata(Entity\Publication::class, 'p');
         $series = $doctrine->getManager()
             ->createNativeQuery("SELECT p.* FROM inducks_publication p WHERE MATCH (title) AGAINST (:q) LIMIT 100", $rsm)
             ->setParameter('q', $q)
@@ -57,7 +53,7 @@ class ApiController extends AbstractController
     public function seriesDetailAction(ManagerRegistry $doctrine, string $countrycode, string $localcode)
     {
         $publicationcode = "$countrycode/$localcode";
-        /* @var $pub Publication */
+        /* @var $pub Entity\Publication */
         $pub = $doctrine->getRepository(Entity\Publication::class)->find($publicationcode);
         $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($doctrine->getManager());
         $rsm->addScalarResult('publisherid', 'publisherid');
@@ -102,7 +98,7 @@ and i.publicationcode=:code", $rsm)
     {
         $publicationcode = "$countrycode/$localcode";
 
-        /* @var $pub Publication */
+        /* @var $pub Entity\Publication */
         $issues = $doctrine->getManager()->getRepository(Entity\Issue::class)
                 ->findBy([
                     'publication' => $publicationcode
@@ -165,7 +161,7 @@ and i.publicationcode=:code", $rsm)
     {
         $publicationcode = "$countrycode/$localcode";
         
-        /* @var $is Issue */
+        /* @var $is Entity\Issue */
         $is = $doctrine->getManager()->getRepository(Entity\Issue::class)
                 ->findBy([
                     'publication' => $publicationcode,
@@ -193,7 +189,7 @@ and i.publicationcode=:code", $rsm)
             #'thumbnailUrl' => $is->getThumbnailUrl(),
             'url' => self::COA_URL . "issue.php?c=" . urlencode($is->getIssuecode()),
         ]);
-        /* @var $e Entry */
+        /* @var $e Entity\Entry */
         foreach($is->getEntries() as $e) {
             #print $e->getEntrycode() . " -- " . $e->getStoryversion()->getKind() . "\n\n";
             $type = '';
@@ -319,7 +315,7 @@ and i.publicationcode=:code", $rsm)
      */
     public function storyDetailAction(ManagerRegistry $doctrine, $storycode)
     {
-        /* @var $story Story */
+        /* @var $story Entity\Story */
         $story = $doctrine->getManager()->getRepository(Entity\Story::class)
                 ->find(urldecode($storycode));
         if(!$story) throw $this->createNotFoundException("The story [$storycode] does not exist");
