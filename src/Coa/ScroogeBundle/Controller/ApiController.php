@@ -19,9 +19,9 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
  */
 class ApiController extends AbstractController
 {
-    const COA_URL = "http://coa.inducks.org/";
-    
-    
+    const COA_URL = "https://www.inducks.org/";
+
+
     /**
      * @Route("series/", name="series_list") 
      */
