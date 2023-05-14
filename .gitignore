@@ -1,4 +1,4 @@
-/web/bundles/
+/public/bundles/
 /var/*
 !/var/cache
 /var/cache/*
@@ -12,7 +12,15 @@
 !var/SymfonyRequirements.php
 /app/phpunit.xml
 /build/
+
+###> symfony/framework-bundle ###
+/.env.local
+/.env.local.php
+/.env.*.local
+/config/secrets/prod/prod.decrypt.private.php
+/var/
 /vendor/
+###< symfony/framework-bundle ###
 /composer.phar
 /nbproject/private/
 /symfony

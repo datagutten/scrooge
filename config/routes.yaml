@@ -1,0 +1,8 @@
+controllers:
+    resource: "@CoaScroogeBundle/Controller/"
+    type: annotation
+
+kernel:
+    resource: ../src/Coa/ScroogeBundle/Kernel.php
+    type: annotation
+
