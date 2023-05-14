@@ -2,12 +2,14 @@
 
 namespace Coa\ScroogeBundle\Controller;
 
+use Coa\ScroogeBundle\Entity;
 use Coa\ScroogeBundle\Entity\Entry;
 use Coa\ScroogeBundle\Entity\Issue;
 use Coa\ScroogeBundle\Entity\Publication;
+use Doctrine\Persistence\ManagerRegistry;
 use Coa\ScroogeBundle\Entity\Story;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
@@ -15,7 +17,7 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 /**
  * @Route("/", defaults={"_format": "json"})
  */
-class ApiController extends Controller
+class ApiController extends AbstractController
 {
     const COA_URL = "http://coa.inducks.org/";
     
@@ -23,12 +25,12 @@ class ApiController extends Controller
     /**
      * @Route("series/", name="series_list") 
      */
-    public function seriesListAction(Request $req)
+    public function seriesListAction(ManagerRegistry $doctrine, Request $req)
     {
         $q = $req->get('q');
-        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($this->getDoctrine()->getManager());
-        $rsm->addRootEntityFromClassMetadata('CoaScroogeBundle:Publication', 'p');
-        $series = $this->getDoctrine()->getManager()
+        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($doctrine->getManager());
+        $rsm->addRootEntityFromClassMetadata(Publication::class, 'p');
+        $series = $doctrine->getManager()
             ->createNativeQuery("SELECT p.* FROM inducks_publication p WHERE MATCH (title) AGAINST (:q) LIMIT 100", $rsm)
             ->setParameter('q', $q)
             ->getResult();
@@ -52,18 +54,17 @@ class ApiController extends Controller
     /**
      * @Route("series/{countrycode}/{localcode}", name="series_detail") 
      */
-    public function seriesDetailAction($countrycode, $localcode)
+    public function seriesDetailAction(ManagerRegistry $doctrine, string $countrycode, string $localcode)
     {
         $publicationcode = "$countrycode/$localcode";
         /* @var $pub Publication */
-        $pub = $this->getDoctrine()->getManager()->getRepository("CoaScroogeBundle:Publication")
-                ->find($publicationcode);
-        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($this->getDoctrine()->getManager());
+        $pub = $doctrine->getRepository(Entity\Publication::class)->find($publicationcode);
+        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($doctrine->getManager());
         $rsm->addScalarResult('publisherid', 'publisherid');
 
         if(!$pub) throw $this->createNotFoundException("The series [$publicationcode] does not exist");
 
-        $publishers = $this->getDoctrine()->getManager()
+        $publishers = $doctrine->getManager()
             ->createNativeQuery("select distinct pj.publisherid
 from inducks_publishingjob pj, inducks_issue i where i.issuecode=pj.issuecode
 and i.publicationcode=:code", $rsm)
@@ -97,12 +98,12 @@ and i.publicationcode=:code", $rsm)
     /**
      * @Route("series/{countrycode}/{localcode}/issues", name="series_issues_list")
      */
-    public function seriesIssuesListAction(Request $req, $countrycode, $localcode)
+    public function seriesIssuesListAction(ManagerRegistry $doctrine, Request $req, $countrycode, $localcode)
     {
         $publicationcode = "$countrycode/$localcode";
 
         /* @var $pub Publication */
-        $issues = $this->getDoctrine()->getManager()->getRepository("CoaScroogeBundle:Issue")
+        $issues = $doctrine->getManager()->getRepository(Entity\Issue::class)
                 ->findBy([
                     'publication' => $publicationcode
                 ], [
@@ -133,12 +134,12 @@ and i.publicationcode=:code", $rsm)
     /**
      * @Route("/stories/", name="story_list") 
      */
-    public function storyListAction(Request $req)
+    public function storyListAction(ManagerRegistry $doctrine, Request $req)
     {
         $q = $req->get('q');
-        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($this->getDoctrine()->getManager());
-        $rsm->addRootEntityFromClassMetadata('CoaScroogeBundle:Story', 's');
-        $stories = $this->getDoctrine()->getManager()
+        $rsm = new \Doctrine\ORM\Query\ResultSetMappingBuilder($doctrine->getManager());
+        $rsm->addRootEntityFromClassMetadata(Entity\Story::class, 's');
+        $stories = $doctrine->getManager()
             ->createNativeQuery("SELECT s.* FROM inducks_story s WHERE MATCH (title,repcountrysummary) AGAINST(:q) LIMIT 100", $rsm)
             ->setParameter('q', $q)
             ->getResult();
@@ -160,12 +161,12 @@ and i.publicationcode=:code", $rsm)
     /**
      * @Route("series/{countrycode}/{localcode}/issues/{issuenumber}", name="issue_detail") 
      */
-    public function issueDetailsAction($countrycode, $localcode, $issuenumber)
+    public function issueDetailsAction(ManagerRegistry $doctrine, $countrycode, $localcode, $issuenumber)
     {
         $publicationcode = "$countrycode/$localcode";
         
         /* @var $is Issue */
-        $is = $this->getDoctrine()->getManager()->getRepository("CoaScroogeBundle:Issue")
+        $is = $doctrine->getManager()->getRepository(Entity\Issue::class)
                 ->findBy([
                     'publication' => $publicationcode,
                     'issuenumber' => $issuenumber
@@ -316,10 +317,10 @@ and i.publicationcode=:code", $rsm)
     /**
      * @Route("/stories/{storycode}", name="story_detail") 
      */
-    public function storyDetailAction($storycode)
+    public function storyDetailAction(ManagerRegistry $doctrine, $storycode)
     {
         /* @var $story Story */
-        $story = $this->getDoctrine()->getManager()->getRepository("CoaScroogeBundle:Story")
+        $story = $doctrine->getManager()->getRepository(Entity\Story::class)
                 ->find(urldecode($storycode));
         if(!$story) throw $this->createNotFoundException("The story [$storycode] does not exist");
         
@@ -369,7 +370,7 @@ and i.publicationcode=:code", $rsm)
     /**
      * @Route("/authors/{personcode}", name="person_detail") 
      */
-    public function personDetailAction($personcode)
+    public function personDetailAction(ManagerRegistry $doctrine, $personcode)
     {
     }
     
