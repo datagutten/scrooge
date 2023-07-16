@@ -22,7 +22,4 @@
 /vendor/
 ###< symfony/framework-bundle ###
 /composer.phar
-/nbproject/private/
-/symfony
-/app/config/.env
 VERSION
